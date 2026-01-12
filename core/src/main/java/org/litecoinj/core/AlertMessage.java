@@ -115,11 +115,7 @@ public class AlertMessage extends Message {
      * doesn't verify, because that would allow arbitrary attackers to spam your users.
      */
     public boolean isSignatureValid() {
-        try {
-            return ECKey.verify(Sha256Hash.hashTwice(content), signature, params.getAlertSigningKey());
-        } catch (SignatureDecodeException e) {
-            return false;
-        }
+        return ECKey.verify(Sha256Hash.hashTwice(content), signature, params.getAlertSigningKey());
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

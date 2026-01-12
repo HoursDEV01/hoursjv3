@@ -16,8 +16,6 @@
 
 package org.litecoinj.core;
 
-import org.litecoinj.utils.ContextPropagatingThreadFactory;
-import org.litecoinj.wallet.SendRequest;
 import org.slf4j.*;
 
 import static com.google.common.base.Preconditions.*;
@@ -29,10 +27,11 @@ import static com.google.common.base.Preconditions.*;
 // TODO: Move Threading.USER_THREAD to here and leave behind just a source code stub. Allow different instantiations of the library to use different user threads.
 // TODO: Keep a URI to where library internal data files can be found, to abstract over the lack of JAR files on Android.
 // TODO: Stash anything else that resembles global library configuration in here and use it to clean up the rest of the API without breaking people.
+// TODO: Move the TorClient into Context, so different parts of the library can read data over Tor without having to request it directly. (or maybe a general socket factory??)
 
 /**
  * <p>The Context object holds various objects and pieces of configuration that are scoped to a specific instantiation of
- * bitcoinj for a specific network. You can get an instance of this class through calling {@link #get()}.</p>
+ * litecoinj for a specific network. You can get an instance of this class through calling {@link #get()}.</p>
  *
  * <p>Context is new in 0.13 and the library is currently in a transitional period: you should create a Context that
  * wraps your chosen network parameters before using the rest of the library. However if you don't, things will still
@@ -59,14 +58,21 @@ public class Context {
      * @param params The network parameters that will be associated with this context.
      */
     public Context(NetworkParameters params) {
-        this(params, DEFAULT_EVENT_HORIZON, Transaction.DEFAULT_TX_FEE, true);
+        log.info("Creating litecoinj {} context.", VersionMessage.BITCOINJ_VERSION);
+        this.confidenceTable = new TxConfidenceTable();
+        this.params = params;
+        this.eventHorizon = DEFAULT_EVENT_HORIZON;
+        this.ensureMinRequiredFee = true;
+        this.feePerKb = Transaction.DEFAULT_TX_FEE;
+        lastConstructed = this;
+        slot.set(this);
     }
 
     /**
      * Creates a new custom context object. This is mainly meant for unit tests for now.
      *
      * @param params The network parameters that will be associated with this context.
-     * @param eventHorizon Number of blocks after which the library will delete data and be unable to always process reorgs. See {@link #getEventHorizon()}.
+     * @param eventHorizon Number of blocks after which the library will delete data and be unable to always process reorgs (see {@link #getEventHorizon()}.
      * @param feePerKb The default fee per 1000 bytes of transaction data to pay when completing transactions. For details, see {@link SendRequest#feePerKb}.
      * @param ensureMinRequiredFee Whether to ensure the minimum required fee by default when completing transactions. For details, see {@link SendRequest#ensureMinRequiredFee}.
      */
@@ -91,7 +97,7 @@ public class Context {
      * object. This method returns that. Note that to help you develop, this method will <i>also</i> propagate whichever
      * context was created last onto the current thread, if it's missing. However it will print an error when doing so
      * because propagation of contexts is meant to be done manually: this is so two libraries or subsystems that
-     * independently use bitcoinj (or possibly alt coin forks of it) can operate correctly.
+     * independently use litecoinj (or possibly alt coin forks of it) can operate correctly.
      *
      * @throws java.lang.IllegalStateException if no context exists at all or if we are in strict mode and there is no context.
      */
@@ -106,7 +112,7 @@ public class Context {
             if (lastConstructed == null)
                 throw new IllegalStateException("You must construct a Context object before using litecoinj!");
             slot.set(lastConstructed);
-            log.error("Performing thread fixup: you are accessing bitcoinj via a thread that has not had any context set on it.");
+            log.error("Performing thread fixup: you are accessing litecoinj via a thread that has not had any context set on it.");
             log.error("This error has been corrected for, but doing this makes your app less robust.");
             log.error("You should use Context.propagate() or a ContextPropagatingThreadFactory.");
             log.error("Please refer to the user guide for more information about this.");
@@ -120,7 +126,7 @@ public class Context {
     }
 
     /**
-     * Require that new threads use {@link #propagate(Context)} or {@link ContextPropagatingThreadFactory},
+     * Require that new threads use {@link #propagate(Context)} or {@link org.litecoinj.utils.ContextPropagatingThreadFactory},
      * rather than using a heuristic for the desired context.
      */
     public static void enableStrictMode() {
@@ -146,7 +152,7 @@ public class Context {
      * Sets the given context as the current thread context. You should use this if you create your own threads that
      * want to create core BitcoinJ objects. Generally, if a class can accept a Context in its constructor and might
      * be used (even indirectly) by a thread, you will want to call this first. Your task may be simplified by using
-     * a {@link ContextPropagatingThreadFactory}.
+     * a {@link org.litecoinj.utils.ContextPropagatingThreadFactory}.
      */
     public static void propagate(Context context) {
         slot.set(checkNotNull(context));
@@ -163,7 +169,7 @@ public class Context {
     }
 
     /**
-     * Returns the {@link NetworkParameters} specified when this context was (auto) created. The
+     * Returns the {@link org.litecoinj.core.NetworkParameters} specified when this context was (auto) created. The
      * network parameters defines various hard coded constants for a specific instance of a Bitcoin network, such as
      * main net, testnet, etc.
      */

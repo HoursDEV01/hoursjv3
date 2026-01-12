@@ -37,7 +37,7 @@ public final class Coin implements Monetary, Comparable<Coin>, Serializable {
     public static final int SMALLEST_UNIT_EXPONENT = 8;
 
     /**
-     * The number of satoshis equal to one bitcoin.
+     * The number of satoshis equal to one litecoin.
      */
     private static final long COIN_VALUE = LongMath.pow(10, SMALLEST_UNIT_EXPONENT);
 
@@ -57,12 +57,12 @@ public final class Coin implements Monetary, Comparable<Coin>, Serializable {
     public static final Coin CENT = COIN.divide(100);
 
     /**
-     * 0.001 Bitcoins, also known as 1 mLTC.
+     * 0.001 Bitcoins, also known as 1 mBTC.
      */
     public static final Coin MILLICOIN = COIN.divide(1000);
 
     /**
-     * 0.000001 Bitcoins, also known as 1 µLTC or 1 uLTC.
+     * 0.000001 Bitcoins, also known as 1 µBTC or 1 uBTC.
      */
     public static final Coin MICROCOIN = MILLICOIN.divide(1000);
 
@@ -116,9 +116,13 @@ public final class Coin implements Monetary, Comparable<Coin>, Serializable {
     }
 
     /**
-     * <p>Parses an amount expressed in the way humans are used to.</p>
-     * <p>This takes string in a format understood by {@link BigDecimal#BigDecimal(String)}, for example "0", "1", "0.10",
-     * "1.23E3", "1234.5E-5".</p>
+     * <p>
+     * Parses an amount expressed in the way humans are used to.
+     * <p/>
+     * <p>
+     * This takes string in a format understood by {@link BigDecimal#BigDecimal(String)}, for example "0", "1", "0.10",
+     * "1.23E3", "1234.5E-5".
+     * </p>
      *
      * @throws IllegalArgumentException
      *             if you try to specify fractional satoshis, or a value out of range.
@@ -133,9 +137,13 @@ public final class Coin implements Monetary, Comparable<Coin>, Serializable {
     }
 
     /**
-     * <p>Parses an amount expressed in the way humans are used to. The amount is cut to satoshi precision.</p>
-     * <p>This takes string in a format understood by {@link BigDecimal#BigDecimal(String)}, for example "0", "1", "0.10",
-     * "1.23E3", "1234.5E-5".</p>
+     * <p>
+     * Parses an amount expressed in the way humans are used to. The amount is cut to satoshi precision.
+     * <p/>
+     * <p>
+     * This takes string in a format understood by {@link BigDecimal#BigDecimal(String)}, for example "0", "1", "0.10",
+     * "1.23E3", "1234.5E-5".
+     * <p/>
      *
      * @throws IllegalArgumentException
      *             if you try to specify a value out of range.

@@ -19,12 +19,12 @@ package org.litecoinj.core;
 import org.litecoinj.store.BlockStore;
 import org.litecoinj.store.BlockStoreException;
 import org.litecoinj.store.FullPrunedBlockStore;
+import com.google.common.base.Charsets;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 
-import org.litecoinj.store.SPVBlockStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -56,7 +55,7 @@ import static com.google.common.base.Preconditions.*;
  * </ol>
  *
  * <p>Checkpoints are used by the SPV {@link BlockChain} to initialize fresh
- * {@link SPVBlockStore}s. They are not used by fully validating mode, which instead has a
+ * {@link org.litecoinj.store.SPVBlockStore}s. They are not used by fully validating mode, which instead has a
  * different concept of checkpoints that are used to hard-code the validity of blocks that violate BIP30 (duplicate
  * coinbase transactions). Those "checkpoints" can be found in NetworkParameters.</p>
  *
@@ -84,7 +83,7 @@ public class CheckpointManager {
 
     public static final BaseEncoding BASE64 = BaseEncoding.base64().omitPadding();
 
-    /** Loads the default checkpoints bundled with bitcoinj */
+    /** Loads the default checkpoints bundled with litecoinj */
     public CheckpointManager(Context context) throws IOException {
         this(context.getParams(), null);
     }
@@ -107,7 +106,7 @@ public class CheckpointManager {
             throw new IOException("Unsupported format.");
     }
 
-    /** Returns a checkpoints stream pointing to inside the bitcoinj JAR */
+    /** Returns a checkpoints stream pointing to inside the litecoinj JAR */
     public static InputStream openStream(NetworkParameters params) {
         return CheckpointManager.class.getResourceAsStream("/" + params.getId() + ".checkpoints.txt");
     }
@@ -156,7 +155,7 @@ public class CheckpointManager {
         Hasher hasher = Hashing.sha256().newHasher();
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.US_ASCII));
+            reader = new BufferedReader(new InputStreamReader(inputStream, Charsets.US_ASCII));
             String magic = reader.readLine();
             if (!TEXTUAL_MAGIC.equals(magic))
                 throw new IOException("unexpected magic: " + magic);

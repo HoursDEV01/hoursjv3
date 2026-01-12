@@ -18,9 +18,6 @@
 package org.litecoinj.core;
 
 import com.google.common.base.Objects;
-import org.litecoinj.core.Block;
-import org.litecoinj.core.StoredBlock;
-import org.litecoinj.core.VerificationException;
 import org.litecoinj.net.discovery.*;
 import org.litecoinj.params.*;
 import org.litecoinj.script.*;
@@ -76,16 +73,12 @@ public abstract class NetworkParameters {
     protected long packetMagic;  // Indicates message origin network and is used to seek to the next message when stream state is unknown.
     protected int addressHeader;
     protected int p2shHeader;
-    protected int p2shHeader2;
     protected int dumpedPrivateKeyHeader;
-    protected String segwitAddressHrp;
     protected int interval;
     protected int targetTimespan;
     protected byte[] alertSigningKey;
-    protected int bip32HeaderP2PKHpub;
-    protected int bip32HeaderP2PKHpriv;
-    protected int bip32HeaderP2WPKHpub;
-    protected int bip32HeaderP2WPKHpriv;
+    protected int bip32HeaderPub;
+    protected int bip32HeaderPriv;
 
     /** Used to check majorities for block version upgrade */
     protected int majorityEnforceBlockUpgrade;
@@ -103,12 +96,13 @@ public abstract class NetworkParameters {
      */
     protected int spendableCoinbaseDepth;
     protected int subsidyDecreaseBlockCount;
-
+    
+    protected int[] acceptableAddressCodes;
     protected String[] dnsSeeds;
     protected int[] addrSeeds;
     protected HttpDiscovery.Details[] httpSeeds = {};
     protected Map<Integer, Sha256Hash> checkpoints = new HashMap<>();
-    protected volatile transient MessageSerializer defaultSerializer = null;
+    protected transient MessageSerializer defaultSerializer = null;
 
     protected NetworkParameters() {
         alertSigningKey = SATOSHI_KEY;
@@ -161,6 +155,42 @@ public abstract class NetworkParameters {
      * The maximum money to be generated
      */
     public static final Coin MAX_MONEY = COIN.multiply(MAX_COINS);
+
+    /** Alias for TestNet3Params.get(), use that instead. */
+    @Deprecated
+    public static NetworkParameters testNet() {
+        return TestNet3Params.get();
+    }
+
+    /** Alias for TestNet2Params.get(), use that instead. */
+    @Deprecated
+    public static NetworkParameters testNet2() {
+        return TestNet2Params.get();
+    }
+
+    /** Alias for TestNet3Params.get(), use that instead. */
+    @Deprecated
+    public static NetworkParameters testNet3() {
+        return TestNet3Params.get();
+    }
+
+    /** Alias for MainNetParams.get(), use that instead */
+    @Deprecated
+    public static NetworkParameters prodNet() {
+        return MainNetParams.get();
+    }
+
+    /** Returns a testnet params modified to allow any difficulty target. */
+    @Deprecated
+    public static NetworkParameters unitTests() {
+        return UnitTestParams.get();
+    }
+
+    /** Returns a standard regression test params (similar to unitTests) */
+    @Deprecated
+    public static NetworkParameters regTests() {
+        return RegTestParams.get();
+    }
 
     /**
      * A Java package style string acting as unique ID for these parameters
@@ -256,7 +286,7 @@ public abstract class NetworkParameters {
         return addrSeeds;
     }
 
-    /** Returns discovery objects for seeds implementing the Cartographer protocol. See {@link HttpDiscovery} for more info. */
+    /** Returns discovery objects for seeds implementing the Cartographer protocol. See {@link org.litecoinj.net.discovery.HttpDiscovery} for more info. */
     public HttpDiscovery.Details[] getHttpSeeds() {
         return httpSeeds;
     }
@@ -264,7 +294,7 @@ public abstract class NetworkParameters {
     /**
      * <p>Genesis block for this chain.</p>
      *
-     * <p>The first block in every chain is a well known constant shared between all Bitcoin implementations. For a
+     * <p>The first block in every chain is a well known constant shared between all Bitcoin implemenetations. For a
      * block to be valid, it must be eventually possible to work backwards to the genesis block by following the
      * prevBlockHash pointers in the block headers.</p>
      *
@@ -287,7 +317,7 @@ public abstract class NetworkParameters {
     }
 
     /**
-     * First byte of a base58 encoded address. See {@link LegacyAddress}. This is the same as acceptableAddressCodes[0] and
+     * First byte of a base58 encoded address. See {@link org.litecoinj.core.Address}. This is the same as acceptableAddressCodes[0] and
      * is the one used for "normal" addresses. Other types of address may be encountered with version codes found in
      * the acceptableAddressCodes array.
      */
@@ -301,18 +331,10 @@ public abstract class NetworkParameters {
     public int getP2SHHeader() {
         return p2shHeader;
     }
-    public int getP2SHHeader2() {
-        return p2shHeader2;
-    }
 
-    /** First byte of a base58 encoded dumped private key. See {@link DumpedPrivateKey}. */
+    /** First byte of a base58 encoded dumped private key. See {@link org.litecoinj.core.DumpedPrivateKey}. */
     public int getDumpedPrivateKeyHeader() {
         return dumpedPrivateKeyHeader;
-    }
-
-    /** Human readable part of bech32 encoded segwit address. */
-    public String getSegwitAddressHrp() {
-        return segwitAddressHrp;
     }
 
     /**
@@ -322,6 +344,15 @@ public abstract class NetworkParameters {
      */
     public int getTargetTimespan() {
         return targetTimespan;
+    }
+
+    /**
+     * The version codes that prefix addresses which are acceptable on this network. Although Satoshi intended these to
+     * be used for "versioning", in fact they are today used to discriminate what kind of data is contained in the
+     * address and to prevent accidentally sending coins across chains which would destroy them.
+     */
+    public int[] getAcceptableAddressCodes() {
+        return acceptableAddressCodes;
     }
 
     /**
@@ -342,32 +373,23 @@ public abstract class NetworkParameters {
     }
 
     /**
-     * The key used to sign {@link AlertMessage}s. You can use {@link ECKey#verify(byte[], byte[], byte[])} to verify
+     * The key used to sign {@link org.litecoinj.core.AlertMessage}s. You can use {@link org.litecoinj.core.ECKey#verify(byte[], byte[], byte[])} to verify
      * signatures using it.
      */
     public byte[] getAlertSigningKey() {
         return alertSigningKey;
     }
 
-    /** Returns the 4 byte header for BIP32 wallet P2PKH - public key part. */
-    public int getBip32HeaderP2PKHpub() {
-        return bip32HeaderP2PKHpub;
+    /** Returns the 4 byte header for BIP32 (HD) wallet - public key part. */
+    public int getBip32HeaderPub() {
+        return bip32HeaderPub;
     }
 
-    /** Returns the 4 byte header for BIP32 wallet P2PKH - private key part. */
-    public int getBip32HeaderP2PKHpriv() {
-        return bip32HeaderP2PKHpriv;
+    /** Returns the 4 byte header for BIP32 (HD) wallet - private key part. */
+    public int getBip32HeaderPriv() {
+        return bip32HeaderPriv;
     }
 
-    /** Returns the 4 byte header for BIP32 wallet P2WPKH - public key part. */
-    public int getBip32HeaderP2WPKHpub() {
-        return bip32HeaderP2WPKHpub;
-    }
-
-    /** Returns the 4 byte header for BIP32 wallet P2WPKH - private key part. */
-    public int getBip32HeaderP2WPKHpriv() {
-        return bip32HeaderP2WPKHpriv;
-    }
     /**
      * Returns the number of coins that will be produced in total, on this
      * network. Where not applicable, a very large number of coins is returned
@@ -376,7 +398,7 @@ public abstract class NetworkParameters {
     public abstract Coin getMaxMoney();
 
     /**
-     * Any standard (ie P2PKH) output smaller than this value will
+     * Any standard (ie pay-to-address) output smaller than this value will
      * most likely be rejected by the network.
      */
     public abstract Coin getMinNonDustOutput();
@@ -387,20 +409,20 @@ public abstract class NetworkParameters {
     public abstract MonetaryFormat getMonetaryFormat();
 
     /**
-     * Scheme part for URIs, for example "bitcoin".
+     * Scheme part for URIs, for example "litecoin".
      */
     public abstract String getUriScheme();
 
     /**
      * Returns whether this network has a maximum number of coins (finite supply) or
-     * not. Always returns true for Bitcoin, but exists to be overridden for other
+     * not. Always returns true for Bitcoin, but exists to be overriden for other
      * networks.
      */
     public abstract boolean hasMaxMoney();
 
     /**
      * Return the default serializer for this network. This is a shared serializer.
-     * @return the default serializer for this network.
+     * @return 
      */
     public final MessageSerializer getDefaultSerializer() {
         // Construct a default serializer if we don't have one
@@ -426,7 +448,7 @@ public abstract class NetworkParameters {
     public abstract BitcoinSerializer getSerializer(boolean parseRetain);
 
     /**
-     * The number of blocks in the last {@link #getMajorityWindow()} blocks
+     * The number of blocks in the last {@link getMajorityWindow()} blocks
      * at which to trigger a notice to the user to upgrade their client, where
      * the client does not understand those blocks.
      */
@@ -435,7 +457,7 @@ public abstract class NetworkParameters {
     }
 
     /**
-     * The number of blocks in the last {@link #getMajorityWindow()} blocks
+     * The number of blocks in the last {@link getMajorityWindow()} blocks
      * at which to enforce the requirement that all new blocks are of the
      * newer type (i.e. outdated blocks are rejected).
      */
@@ -502,11 +524,9 @@ public abstract class NetworkParameters {
     public abstract int getProtocolVersionNum(final ProtocolVersion version);
 
     public static enum ProtocolVersion {
-        MINIMUM(70002),
+        MINIMUM(70000),
         PONG(60001),
-        BLOOM_FILTER(70000), // BIP37
-        BLOOM_FILTER_BIP111(70011), // BIP111
-        WITNESS_VERSION(70012),
+        BLOOM_FILTER(70000),
         CURRENT(70002);
 
         private final int bitcoinProtocol;

@@ -19,9 +19,13 @@ package org.litecoinj.core.listeners;
 import org.litecoinj.core.Peer;
 
 /**
- * <p>Implementors can listen to events indicating a peer disconnecting.</p>
+ * <p>Implementors can listen to events like peer discovery, connect or disconnects.</p>
+ *
+ * @deprecated Use the single event interfaces instead
  */
-public interface PeerDisconnectedEventListener {
+@Deprecated
+public interface PeerConnectionEventListener extends PeerConnectedEventListener,
+        PeerDiscoveredEventListener, PeerDisconnectedEventListener {
 
     /**
      * Called when a peer is disconnected. Note that this won't be called if the listener is registered on a

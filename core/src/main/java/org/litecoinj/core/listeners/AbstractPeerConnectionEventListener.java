@@ -16,19 +16,27 @@
 
 package org.litecoinj.core.listeners;
 
-import org.litecoinj.core.Peer;
+import org.litecoinj.core.*;
+
+import java.util.*;
 
 /**
- * <p>Implementors can listen to events indicating a new peer connecting.</p>
+ * Deprecated: implement the more specific event listener interfaces instead to fill out only what you need
  */
-public interface PeerConnectedEventListener {
+@Deprecated
+public abstract class AbstractPeerConnectionEventListener implements PeerConnectionEventListener {
+    @Override
+    public void onPeersDiscovered(Set<PeerAddress> peerAddresses) {
+        // Do nothing
+    }
 
-    /**
-     * Called when a peer is connected. If this listener is registered to a {@link Peer} instead of a {@link PeerGroup},
-     * peerCount will always be 1.
-     *
-     * @param peer
-     * @param peerCount the total number of connected peers
-     */
-    void onPeerConnected(Peer peer, int peerCount);
+    @Override
+    public void onPeerConnected(Peer peer, int peerCount) {
+        // Do nothing
+    }
+
+    @Override
+    public void onPeerDisconnected(Peer peer, int peerCount) {
+        // Do nothing
+    }
 }

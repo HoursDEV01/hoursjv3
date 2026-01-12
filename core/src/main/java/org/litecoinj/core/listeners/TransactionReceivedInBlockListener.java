@@ -17,7 +17,6 @@
 package org.litecoinj.core.listeners;
 
 import org.litecoinj.core.BlockChain;
-import org.litecoinj.core.FilteredBlock;
 import org.litecoinj.core.Sha256Hash;
 import org.litecoinj.core.StoredBlock;
 import org.litecoinj.core.Transaction;

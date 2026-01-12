@@ -18,7 +18,6 @@
 package org.litecoinj.core;
 
 import org.litecoinj.script.Script;
-import org.litecoinj.script.ScriptException;
 import org.litecoinj.wallet.DefaultRiskAnalysis;
 import org.litecoinj.wallet.KeyBag;
 import org.litecoinj.wallet.RedeemData;
@@ -47,21 +46,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class TransactionInput extends ChildMessage {
     /** Magic sequence number that indicates there is no sequence number. */
     public static final long NO_SEQUENCE = 0xFFFFFFFFL;
-    /**
-     * BIP68: If this flag set, sequence is NOT interpreted as a relative lock-time.
-     */
-    public static final long SEQUENCE_LOCKTIME_DISABLE_FLAG = 1L << 31;
-    /**
-     * BIP68: If sequence encodes a relative lock-time and this flag is set, the relative lock-time has units of 512
-     * seconds, otherwise it specifies blocks with a granularity of 1.
-     */
-    public static final long SEQUENCE_LOCKTIME_TYPE_FLAG = 1L << 22;
-    /**
-     * BIP68: If sequence encodes a relative lock-time, this mask is applied to extract that lock-time from the sequence
-     * field.
-     */
-    public static final long SEQUENCE_LOCKTIME_MASK = 0x0000ffff;
-
     private static final byte[] EMPTY_ARRAY = new byte[0];
     // Magic outpoint index that indicates the input is in fact unconnected.
     private static final long UNCONNECTED = 0xFFFFFFFFL;
@@ -80,8 +64,6 @@ public class TransactionInput extends ChildMessage {
     /** Value of the output connected to the input, if known. This field does not participate in equals()/hashCode(). */
     @Nullable
     private Coin value;
-
-    private TransactionWitness witness;
 
     /**
      * Creates an input that connects to nothing - used only in creation of coinbase transactions.
@@ -147,17 +129,6 @@ public class TransactionInput extends ChildMessage {
         this.value = null;
     }
 
-    /**
-     * Gets the index of this input in the parent transaction, or throws if this input is free standing. Iterates
-     * over the parents list to discover this.
-     */
-    public int getIndex() {
-        final int myIndex = getParentTransaction().getInputs().indexOf(this);
-        if (myIndex < 0)
-            throw new IllegalStateException("Input linked to wrong parent transaction?");
-        return myIndex;
-    }
-
     @Override
     protected void parse() throws ProtocolException {
         outpoint = new TransactionOutPoint(params, payload, cursor, this, serializer);
@@ -204,6 +175,20 @@ public class TransactionInput extends ChildMessage {
         this.scriptSig = new WeakReference<>(checkNotNull(scriptSig));
         // TODO: This should all be cleaned up so we have a consistent internal representation.
         setScriptBytes(scriptSig.getProgram());
+    }
+
+    /**
+     * Convenience method that returns the from address of this input by parsing the scriptSig. The concept of a
+     * "from address" is not well defined in Bitcoin and you should not assume that senders of a transaction can
+     * actually receive coins on the same address they used to sign (e.g. this is not true for shared wallets).
+     */
+    @Deprecated
+    public Address getFromAddress() throws ScriptException {
+        if (isCoinBase()) {
+            throw new ScriptException(
+                    "This is a coinbase transaction which generates new coins. It does not have a from address.");
+        }
+        return getScriptSig().getFromAddress(params);
     }
 
     /**
@@ -278,31 +263,6 @@ public class TransactionInput extends ChildMessage {
         return value;
     }
 
-    /**
-     * Get the transaction witness of this input.
-     * 
-     * @return the witness of the input
-     */
-    public TransactionWitness getWitness() {
-        return witness != null ? witness : TransactionWitness.EMPTY;
-    }
-
-    /**
-     * Set the transaction witness of an input.
-     */
-    public void setWitness(TransactionWitness witness) {
-        this.witness = witness;
-    }
-
-    /**
-     * Determine if the transaction has witnesses.
-     * 
-     * @return true if the transaction has witnesses
-     */
-    public boolean hasWitness() {
-        return witness != null && witness.getPushCount() != 0;
-    }
-
     public enum ConnectionResult {
         NO_SUCH_TX,
         ALREADY_SPENT,
@@ -326,7 +286,7 @@ public class TransactionInput extends ChildMessage {
 
     /**
      * Alias for getOutpoint().getConnectedRedeemData(keyBag)
-     * @see TransactionOutPoint#getConnectedRedeemData(KeyBag)
+     * @see TransactionOutPoint#getConnectedRedeemData(org.litecoinj.wallet.KeyBag)
      */
     @Nullable
     public RedeemData getConnectedRedeemData(KeyBag keyBag) throws ScriptException {
@@ -344,7 +304,7 @@ public class TransactionInput extends ChildMessage {
      * Connecting means updating the internal pointers and spent flags. If the mode is to ABORT_ON_CONFLICT then
      * the spent output won't be changed, but the outpoint.fromTx pointer will still be updated.
      *
-     * @param transactions Map of txhash to transaction.
+     * @param transactions Map of txhash->transaction.
      * @param mode   Whether to abort if there's a pre-existing connection or not.
      * @return NO_SUCH_TX if the prevtx wasn't found, ALREADY_SPENT if there was a conflict, SUCCESS if not.
      */
@@ -366,7 +326,7 @@ public class TransactionInput extends ChildMessage {
      * @return NO_SUCH_TX if transaction is not the prevtx, ALREADY_SPENT if there was a conflict, SUCCESS if not.
      */
     public ConnectionResult connect(Transaction transaction, ConnectMode mode) {
-        if (!transaction.getTxId().equals(outpoint.getHash()))
+        if (!transaction.getHash().equals(outpoint.getHash()))
             return ConnectionResult.NO_SUCH_TX;
         checkElementIndex((int) outpoint.getIndex(), transaction.getOutputs().size(), "Corrupt transaction");
         TransactionOutput out = transaction.getOutput((int) outpoint.getIndex());
@@ -438,14 +398,6 @@ public class TransactionInput extends ChildMessage {
     }
 
     /**
-     * Returns whether this input, if it belongs to a version 2 (or higher) transaction, has
-     * <a href="https://github.com/bitcoin/bips/blob/master/bip-0068.mediawiki">relative lock-time</a> enabled.
-     */
-    public boolean hasRelativeLockTime() {
-        return (sequence & SEQUENCE_LOCKTIME_DISABLE_FLAG) == 0;
-    }
-
-    /**
      * For a connected transaction, runs the script against the connected pubkey and verifies they are correct.
      * @throws ScriptException if the script did not verify.
      * @throws VerificationException If the outpoint doesn't match the given output.
@@ -468,14 +420,14 @@ public class TransactionInput extends ChildMessage {
      */
     public void verify(TransactionOutput output) throws VerificationException {
         if (output.parent != null) {
-            if (!getOutpoint().getHash().equals(output.getParentTransaction().getTxId()))
+            if (!getOutpoint().getHash().equals(output.getParentTransaction().getHash()))
                 throw new VerificationException("This input does not refer to the tx containing the output.");
             if (getOutpoint().getIndex() != output.getIndex())
                 throw new VerificationException("This input refers to a different output on the given tx.");
         }
         Script pubKey = output.getScriptPubKey();
-        getScriptSig().correctlySpends(getParentTransaction(), getIndex(), getWitness(), getValue(), pubKey,
-                Script.ALL_VERIFY_FLAGS);
+        int myIndex = getParentTransaction().getInputs().indexOf(this);
+        getScriptSig().correctlySpends(getParentTransaction(), myIndex, pubKey);
     }
 
     /**
@@ -508,7 +460,7 @@ public class TransactionInput extends ChildMessage {
      * The "IsStandard" rules control whether the default Bitcoin Core client blocks relay of a tx / refuses to mine it,
      * however, non-standard transactions can still be included in blocks and will be accepted as valid if so.</p>
      *
-     * <p>This method simply calls {@code DefaultRiskAnalysis.isInputStandard(this)}.</p>
+     * <p>This method simply calls <tt>DefaultRiskAnalysis.isInputStandard(this)</tt>.</p>
      */
     public DefaultRiskAnalysis.RuleViolation isStandard() {
         return DefaultRiskAnalysis.isInputStandard(this);
@@ -539,7 +491,7 @@ public class TransactionInput extends ChildMessage {
                 s.append(": COINBASE");
             } else {
                 s.append(" for [").append(outpoint).append("]: ").append(getScriptSig());
-                String flags = Joiner.on(", ").skipNulls().join(hasWitness() ? "witness" : null,
+                String flags = Joiner.on(", ").skipNulls().join(
                         hasSequence() ? "sequence: " + Long.toHexString(sequence) : null,
                         isOptInFullRBF() ? "opts into full RBF" : null);
                 if (!flags.isEmpty())

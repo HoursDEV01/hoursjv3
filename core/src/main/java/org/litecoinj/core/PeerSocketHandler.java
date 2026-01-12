@@ -18,8 +18,6 @@ package org.litecoinj.core;
 
 import org.litecoinj.net.AbstractTimeoutHandler;
 import org.litecoinj.net.MessageWriteTarget;
-import org.litecoinj.net.NioClient;
-import org.litecoinj.net.NioClientManager;
 import org.litecoinj.net.StreamConnection;
 import org.litecoinj.utils.Threading;
 import com.google.common.annotations.VisibleForTesting;
@@ -39,7 +37,7 @@ import static com.google.common.base.Preconditions.*;
 
 /**
  * Handles high-level message (de)serialization for peers, acting as the bridge between the
- * {@code org.litecoinj.net} classes and {@link Peer}.
+ * {@link org.litecoinj.net} classes and {@link Peer}.
  */
 public abstract class PeerSocketHandler extends AbstractTimeoutHandler implements StreamConnection {
     private static final Logger log = LoggerFactory.getLogger(PeerSocketHandler.class);
@@ -192,8 +190,8 @@ public abstract class PeerSocketHandler extends AbstractTimeoutHandler implement
 
     /**
      * Sets the {@link MessageWriteTarget} used to write messages to the peer. This should almost never be called, it is
-     * called automatically by {@link NioClient} or
-     * {@link NioClientManager} once the socket finishes initialization.
+     * called automatically by {@link org.litecoinj.net.NioClient} or
+     * {@link org.litecoinj.net.NioClientManager} once the socket finishes initialization.
      */
     @Override
     public void setWriteTarget(MessageWriteTarget writeTarget) {

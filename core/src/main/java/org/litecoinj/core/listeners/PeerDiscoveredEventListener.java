@@ -18,8 +18,6 @@ package org.litecoinj.core.listeners;
 
 import org.litecoinj.core.Peer;
 import org.litecoinj.core.PeerAddress;
-import org.litecoinj.core.PeerGroup;
-
 import java.util.Set;
 
 /**

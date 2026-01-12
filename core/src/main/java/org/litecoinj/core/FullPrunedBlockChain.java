@@ -19,17 +19,14 @@ package org.litecoinj.core;
 
 import org.litecoinj.script.Script;
 import org.litecoinj.script.Script.VerifyFlag;
-import org.litecoinj.script.ScriptPattern;
 import org.litecoinj.store.BlockStoreException;
 import org.litecoinj.store.FullPrunedBlockStore;
 import org.litecoinj.utils.*;
 import org.litecoinj.wallet.Wallet;
-import org.litecoinj.wallet.WalletExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,7 +58,7 @@ public class FullPrunedBlockChain extends AbstractBlockChain {
     /**
      * Constructs a block chain connected to the given wallet and store. To obtain a {@link Wallet} you can construct
      * one from scratch, or you can deserialize a saved wallet from disk using
-     * {@link Wallet#loadFromFile(File, WalletExtension...)}
+     * {@link Wallet#loadFromFile(java.io.File, WalletExtension...)}
      */
     public FullPrunedBlockChain(Context context, Wallet wallet, FullPrunedBlockStore blockStore) throws BlockStoreException {
         this(context, new ArrayList<Wallet>(), blockStore);
@@ -71,7 +68,7 @@ public class FullPrunedBlockChain extends AbstractBlockChain {
     /**
      * Constructs a block chain connected to the given wallet and store. To obtain a {@link Wallet} you can construct
      * one from scratch, or you can deserialize a saved wallet from disk using
-     * {@link Wallet#loadFromFile(File, WalletExtension...)}
+     * {@link Wallet#loadFromFile(java.io.File, WalletExtension...)}
      */
     public FullPrunedBlockChain(NetworkParameters params, Wallet wallet, FullPrunedBlockStore blockStore) throws BlockStoreException {
         this(Context.getOrCreate(params), wallet, blockStore);
@@ -235,7 +232,7 @@ public class FullPrunedBlockChain extends AbstractBlockChain {
                 // BIP30 document for more details on this: https://github.com/bitcoin/bips/blob/master/bip-0030.mediawiki
                 for (Transaction tx : block.transactions) {
                     final Set<VerifyFlag> verifyFlags = params.getTransactionVerificationFlags(block, tx, getVersionTally(), height);
-                    Sha256Hash hash = tx.getTxId();
+                    Sha256Hash hash = tx.getHash();
                     // If we already have unspent outputs for this hash, we saw the tx already. Either the block is
                     // being added twice (bug) or the block is a BIP30 violator.
                     if (blockStore.hasUnspentOutputs(hash, tx.getOutputs().size()))
@@ -272,7 +269,7 @@ public class FullPrunedBlockChain extends AbstractBlockChain {
                         // TODO: Check we're not spending the genesis transaction here. Bitcoin Core won't allow it.
                         valueIn = valueIn.add(prevOut.getValue());
                         if (verifyFlags.contains(VerifyFlag.P2SH)) {
-                            if (ScriptPattern.isP2SH(prevOut.getScript()))
+                            if (prevOut.getScript().isPayToScriptHash())
                                 sigOps += Script.getP2SHSigOpCount(in.getScriptBytes());
                             if (sigOps > Block.MAX_BLOCK_SIGOPS)
                                 throw new VerificationException("Too many P2SH SigOps in block");
@@ -283,7 +280,7 @@ public class FullPrunedBlockChain extends AbstractBlockChain {
                         txOutsSpent.add(prevOut);
                     }
                 }
-                Sha256Hash hash = tx.getTxId();
+                Sha256Hash hash = tx.getHash();
                 for (TransactionOutput out : tx.getOutputs()) {
                     valueOut = valueOut.add(out.getValue());
                     // For each output, add it to the set of unspent outputs so it can be consumed in future.
@@ -343,10 +340,10 @@ public class FullPrunedBlockChain extends AbstractBlockChain {
         return new TransactionOutputChanges(txOutsCreated, txOutsSpent);
     }
 
+    @Override
     /**
      * Used during reorgs to connect a block previously on a fork
      */
-    @Override
     protected synchronized TransactionOutputChanges connectTransactions(StoredBlock newBlock)
             throws VerificationException, BlockStoreException, PrunedException {
         checkState(lock.isHeldByCurrentThread());
@@ -370,7 +367,7 @@ public class FullPrunedBlockChain extends AbstractBlockChain {
 
                 if (!params.isCheckpoint(newBlock.getHeight())) {
                     for (Transaction tx : transactions) {
-                        Sha256Hash hash = tx.getTxId();
+                        Sha256Hash hash = tx.getHash();
                         if (blockStore.hasUnspentOutputs(hash, tx.getOutputs().size()))
                             throw new VerificationException("Block failed BIP30 test!");
                     }
@@ -400,7 +397,7 @@ public class FullPrunedBlockChain extends AbstractBlockChain {
                                 throw new VerificationException("Tried to spend coinbase at depth " + (newBlock.getHeight() - prevOut.getHeight()));
                             valueIn = valueIn.add(prevOut.getValue());
                             if (verifyFlags.contains(VerifyFlag.P2SH)) {
-                                if (ScriptPattern.isP2SH(prevOut.getScript()))
+                                if (prevOut.getScript().isPayToScriptHash())
                                     sigOps += Script.getP2SHSigOpCount(in.getScriptBytes());
                                 if (sigOps > Block.MAX_BLOCK_SIGOPS)
                                     throw new VerificationException("Too many P2SH SigOps in block");
@@ -414,7 +411,7 @@ public class FullPrunedBlockChain extends AbstractBlockChain {
                             txOutsSpent.add(prevOut);
                         }
                     }
-                    Sha256Hash hash = tx.getTxId();
+                    Sha256Hash hash = tx.getHash();
                     for (TransactionOutput out : tx.getOutputs()) {
                         valueOut = valueOut.add(out.getValue());
                         Script script = getScript(out.getScriptBytes());

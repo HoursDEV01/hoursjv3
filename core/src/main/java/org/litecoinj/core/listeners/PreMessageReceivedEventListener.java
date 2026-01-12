@@ -17,11 +17,10 @@
 package org.litecoinj.core.listeners;
 
 import org.litecoinj.core.*;
-import org.litecoinj.utils.Threading;
 
 /**
  * <p>Implementors can listen to events like blocks being downloaded/transactions being broadcast/connect/disconnects,
- * they can pre-filter messages before they are processed by a {@link Peer} or {@link PeerGroup}, and they can
+ * they can pre-filter messages before they are procesesed by a {@link Peer} or {@link PeerGroup}, and they can
  * provide transactions to remote peers when they ask for them.</p>
  */
 public interface PreMessageReceivedEventListener {
@@ -33,7 +32,7 @@ public interface PreMessageReceivedEventListener {
      * callback is passed as "m" to the next, forming a chain.</p>
      *
      * <p>Note that this will never be called if registered with any executor other than
-     * {@link Threading#SAME_THREAD}</p>
+     * {@link org.litecoinj.utils.Threading#SAME_THREAD}</p>
      */
     Message onPreMessageReceived(Peer peer, Message m);
 }

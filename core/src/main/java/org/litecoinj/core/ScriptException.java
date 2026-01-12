@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package org.litecoinj.core.listeners;
+package org.litecoinj.core;
 
-import org.litecoinj.core.Peer;
+@SuppressWarnings("serial")
+public class ScriptException extends VerificationException {
 
-/**
- * <p>Implementors can listen to events indicating a new peer connecting.</p>
- */
-public interface PeerConnectedEventListener {
+    public ScriptException(String msg) {
+        super(msg);
+    }
 
-    /**
-     * Called when a peer is connected. If this listener is registered to a {@link Peer} instead of a {@link PeerGroup},
-     * peerCount will always be 1.
-     *
-     * @param peer
-     * @param peerCount the total number of connected peers
-     */
-    void onPeerConnected(Peer peer, int peerCount);
+    public ScriptException(String msg, Exception e) {
+        super(msg, e);
+    }
 }

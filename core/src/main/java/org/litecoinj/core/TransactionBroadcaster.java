@@ -18,7 +18,7 @@ package org.litecoinj.core;
 
 /**
  * A general interface which declares the ability to broadcast transactions. This is implemented
- * by {@link PeerGroup}.
+ * by {@link org.litecoinj.core.PeerGroup}.
  */
 public interface TransactionBroadcaster {
     /** Broadcast the given transaction on the network */

@@ -21,12 +21,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import org.litecoinj.store.BlockStore;
 import org.litecoinj.store.BlockStoreException;
-import org.litecoinj.store.MemoryBlockStore;
-import org.litecoinj.store.SPVBlockStore;
 import org.litecoinj.wallet.Wallet;
-import org.litecoinj.wallet.WalletExtension;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,10 +40,10 @@ public class BlockChain extends AbstractBlockChain {
     /**
      * <p>Constructs a BlockChain connected to the given wallet and store. To obtain a {@link Wallet} you can construct
      * one from scratch, or you can deserialize a saved wallet from disk using
-     * {@link Wallet#loadFromFile(File, WalletExtension...)}</p>
+     * {@link Wallet#loadFromFile(java.io.File, WalletExtension...)}</p>
      *
-     * <p>For the store, you should use {@link SPVBlockStore} or you could also try a
-     * {@link MemoryBlockStore} if you want to hold all headers in RAM and don't care about
+     * <p>For the store, you should use {@link org.litecoinj.store.SPVBlockStore} or you could also try a
+     * {@link org.litecoinj.store.MemoryBlockStore} if you want to hold all headers in RAM and don't care about
      * disk serialization (this is rare).</p>
      */
     public BlockChain(Context context, Wallet wallet, BlockStore blockStore) throws BlockStoreException {

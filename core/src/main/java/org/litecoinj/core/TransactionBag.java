@@ -1,6 +1,5 @@
 /*
  * Copyright 2014 Giannis Dzegoutanis
- * Copyright 2019 Andreas Schildbach
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,31 +16,23 @@
 
 package org.litecoinj.core;
 
-import javax.annotation.Nullable;
-
 import org.litecoinj.script.Script;
-import org.litecoinj.wallet.Wallet;
 import org.litecoinj.wallet.WalletTransaction;
 
 import java.util.Map;
 
 /**
- * This interface is used to abstract the {@link Wallet} and the {@link Transaction}
+ * This interface is used to abstract the {@link org.litecoinj.wallet.Wallet} and the {@link org.litecoinj.core.Transaction}
  */
 public interface TransactionBag {
-    /**
-     * Look for a public key which hashes to the given hash and (optionally) is used for a specific script type.
-     * @param pubKeyHash hash of the public key to look for
-     * @param scriptType only look for given usage (currently {@link Script.ScriptType#P2PKH} or {@link Script.ScriptType#P2WPKH}) or {@code null} if we don't care
-     * @return true if hash was found
-     */
-    boolean isPubKeyHashMine(byte[] pubKeyHash, @Nullable Script.ScriptType scriptType);
+    /** Returns true if this wallet contains a public key which hashes to the given hash. */
+    boolean isPubKeyHashMine(byte[] pubkeyHash);
 
     /** Returns true if this wallet is watching transactions for outputs with the script. */
     boolean isWatchedScript(Script script);
 
     /** Returns true if this wallet contains a keypair with the given public key. */
-    boolean isPubKeyMine(byte[] pubKey);
+    boolean isPubKeyMine(byte[] pubkey);
 
     /** Returns true if this wallet knows the script corresponding to the given hash. */
     boolean isPayToScriptHashMine(byte[] payToScriptHash);

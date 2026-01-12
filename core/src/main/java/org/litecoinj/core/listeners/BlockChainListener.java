@@ -1,6 +1,6 @@
 /*
- * Copyright 2011 Google Inc.
- *
+ * Copyright by the original author or authors.
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,19 +16,9 @@
 
 package org.litecoinj.core.listeners;
 
-import org.litecoinj.core.Peer;
-
 /**
- * <p>Implementors can listen to events indicating a new peer connecting.</p>
+ * Old interface for backwards compatibility. Implement the more specific interfaces instead.
  */
-public interface PeerConnectedEventListener {
-
-    /**
-     * Called when a peer is connected. If this listener is registered to a {@link Peer} instead of a {@link PeerGroup},
-     * peerCount will always be 1.
-     *
-     * @param peer
-     * @param peerCount the total number of connected peers
-     */
-    void onPeerConnected(Peer peer, int peerCount);
+@Deprecated
+public interface BlockChainListener extends NewBestBlockListener, TransactionReceivedInBlockListener, ReorganizeListener {
 }
