@@ -45,7 +45,7 @@ public class MainNetParams extends AbstractBitcoinNetParams {
         p2shHeader2 = 50;
 
         acceptableAddressCodes = new int[] { addressHeader, p2shHeader,p2shHeader2 };
-        port = 9333;
+        port = 9024;
         packetMagic = 0xfbc0b6dbl;
         bip32HeaderPub = 0x019da462; //The 4 byte header that serializes in base58 to "xpub".
         bip32HeaderPriv = 0x019d9cfe; //The 4 byte header that serializes in base58 to "xprv"
@@ -61,6 +61,7 @@ public class MainNetParams extends AbstractBitcoinNetParams {
         subsidyDecreaseBlockCount = 840000;
         spendableCoinbaseDepth = 100;
         String genesisHash = genesisBlock.getHashAsString();
+        System.out.println(genesisHash);
         //checkState(genesisHash.equals("7e718b4eacbb5c606a463f3f69164296df0255e280e751a7652e14fae57eb098"),
             //    genesisHash);
 
