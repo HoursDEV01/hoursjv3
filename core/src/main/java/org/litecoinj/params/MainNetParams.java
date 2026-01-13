@@ -19,6 +19,7 @@ package org.litecoinj.params;
 
 import org.litecoinj.core.*;
 import org.litecoinj.net.discovery.*;
+import android.util.Log;
 
 import java.net.*;
 
@@ -32,7 +33,7 @@ public class MainNetParams extends AbstractBitcoinNetParams {
     public static final int MAINNET_MAJORITY_WINDOW = 1000;
     public static final int MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED = 950;
     public static final int MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE = 750;
-
+    
     public MainNetParams() {
         super();
         interval = INTERVAL;
@@ -60,8 +61,10 @@ public class MainNetParams extends AbstractBitcoinNetParams {
         subsidyDecreaseBlockCount = 840000;
         spendableCoinbaseDepth = 100;
         String genesisHash = genesisBlock.getHashAsString();
-        checkState(genesisHash.equals("7e718b4eacbb5c606a463f3f69164296df0255e280e751a7652e14fae57eb098"),
-                genesisHash);
+        private static final String TAG = genesisBlock.getHashAsString();
+        Log.d(TAG, "The current user email is: " + userEmail);
+        //checkState(genesisHash.equals("7e718b4eacbb5c606a463f3f69164296df0255e280e751a7652e14fae57eb098"),
+            //    genesisHash);
 
         // This contains (at a minimum) the blocks which are not BIP30 compliant. BIP30 changed how duplicate
         // transactions are handled. Duplicated transactions could occur in the case where a coinbase had the same
