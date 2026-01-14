@@ -62,15 +62,18 @@ public class MainNetParams extends AbstractBitcoinNetParams {
         spendableCoinbaseDepth = 100;
         String genesisHash = genesisBlock.getHashAsString();
         System.out.println(genesisHash);
-        //checkState(genesisHash.equals("7e718b4eacbb5c606a463f3f69164296df0255e280e751a7652e14fae57eb098"),
-            //    genesisHash);
+        checkState(genesisHash.equals("7e718b4eacbb5c606a463f3f69164296df0255e280e751a7652e14fae57eb098"),
+               genesisHash);
 
         // This contains (at a minimum) the blocks which are not BIP30 compliant. BIP30 changed how duplicate
         // transactions are handled. Duplicated transactions could occur in the case where a coinbase had the same
         // extraNonce and the same outputs but appeared at different heights, and greatly complicated re-org handling.
         // Having these here simplifies block connection logic considerably.
-        //checkpoints.put(1500, Sha256Hash.wrap("841a2965955dd288cfa707a755d05a54e45f8bd476835ec9af4402a2b59a2967"));
-        
+        checkpoints.put(0, Sha256Hash.wrap("7e718b4eacbb5c606a463f3f69164296df0255e280e751a7652e14fae57eb098"));
+        checkpoints.put(8572, Sha256Hash.wrap("0977687733122de382a20a001449ce9c558c11bfd6ab96c90a23d1408bafa9eb"));
+        checkpoints.put(14532, Sha256Hash.wrap("b77a4f4ffa69dc43c7ebd818eec3ca74c33d3fa66e7df63c9bc2eb95c503f39e"));
+        checkpoints.put(28777, Sha256Hash.wrap("3ac0831eeaa633a9c5ec6f032f2397555d3affdf1e26fa503d6f2b4ccea045ce"));
+        checkpoints.put(30846, Sha256Hash.wrap("a661836395ac2f04f373ce705312aa92526ae4fd0d3eace84e908ff9f2dfabe7"));
 
         dnsSeeds = new String[] {
                 "hour-n1.flightsystem.org",
