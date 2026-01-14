@@ -46,9 +46,9 @@ public class MainNetParams extends AbstractBitcoinNetParams {
 
         acceptableAddressCodes = new int[] { addressHeader, p2shHeader,p2shHeader2 };
         port = 9024;
-        packetMagic = 0xfbc0b6dbl;
-        bip32HeaderPub = 0x019da462; //The 4 byte header that serializes in base58 to "xpub".
-        bip32HeaderPriv = 0x019d9cfe; //The 4 byte header that serializes in base58 to "xprv"
+        packetMagic = 0xfac2b2db;
+        bip32HeaderPub = 0x0288b11e; //The 4 byte header that serializes in base58 to "xpub".
+        bip32HeaderPriv = 0x0328aee4; //The 4 byte header that serializes in base58 to "xprv"
 
         majorityEnforceBlockUpgrade = MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
         majorityRejectBlockOutdated = MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED;
