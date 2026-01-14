@@ -131,7 +131,7 @@ public abstract class NetworkParameters {
             throw new RuntimeException(e);
         }
         genesisBlock.addTransaction(t);
-        genesisBlock.setMerkleRoot(Sha256Hash.wrap("97ddfbbae6be97fd6cdf3e7ca13232a3afff2353e29badfab7f73011edd4ced9"));
+        genesisBlock.setMerkleRoot(Sha256Hash.wrap("202abe8aaa5c63bef5d8afd495051fd98e44efbc24059fc03cd01a18be05f112"));
         return genesisBlock;
     }
 
