@@ -79,8 +79,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.*;
-import java.io.File;
-import android.content.Context;
+
 import static com.google.common.base.Preconditions.*;
 
 // To do list:
@@ -1332,8 +1331,7 @@ public class Wallet extends BaseTaggableObject
      * once written.
      */
     public void saveToFile(File f) throws IOException {
-        //File directory = f.getAbsoluteFile().getParentFile();
-        File directory = getApplicationContext().getFilesDir();
+        File directory = f.getAbsoluteFile().getParentFile();
         File temp = File.createTempFile("wallet", null, directory);
         saveToFile(temp, f);
     }
