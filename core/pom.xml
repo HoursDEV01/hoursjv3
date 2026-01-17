@@ -49,7 +49,12 @@
             <email>litecoinj@googlegroups.com</email>
         </developer>
     </developers>
-
+    <repositories>
+        <repository>
+        <id>google-maven</id>
+        <url>https://maven.google.com</url>
+        </repository>
+    </repositories>
     <profiles>
         <profile>
             <id>update-protobuf</id>
