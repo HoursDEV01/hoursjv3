@@ -387,6 +387,12 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <version>0.3.0</version> <!-- Check for the latest version on Maven Central -->
+            <!-- The scope depends on your needs; 'compile' is often correct for annotations -->
+        </dependency>
+        <dependency>
             <groupId>com.madgag.spongycastle</groupId>
             <artifactId>core</artifactId>
             <version>1.52.0.0</version>
