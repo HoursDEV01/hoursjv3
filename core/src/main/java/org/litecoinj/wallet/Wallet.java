@@ -1310,17 +1310,6 @@ public class Wallet extends BaseTaggableObject
             stream.getFD().sync();
             stream.close();
             stream = null;
-            if (PlatformUtils.isWindows()) {
-                // Work around an issue on Windows whereby you can't rename over existing files.
-                File canonical = destFile.getCanonicalFile();
-                if (canonical.exists() && !canonical.delete())
-                    throw new IOException("Failed to delete canonical wallet file for replacement with autosave");
-                if (tempFile.renameTo(canonical))
-                    return;  // else fall through.
-                throw new IOException("Failed to rename " + tempFile + " to " + canonical);
-            } else if (!tempFile.renameTo(destFile)) {
-                throw new IOException("Failed to rename " + tempFile + " to " + destFile);
-            }
         } catch (RuntimeException e) {
             log.error("Failed whilst saving wallet", e);
             throw e;
