@@ -1331,8 +1331,7 @@ public class Wallet extends BaseTaggableObject
      * once written.
      */
     public void saveToFile(File f) throws IOException {
-        //File directory = f.getAbsoluteFile().getParentFile();
-        File directory = getApplicationInfo().dataDir;
+        File directory = f.getAbsoluteFile().getParentFile();
         System.out.println(directory);
         File temp = File.createTempFile("wallet", null, directory);
         saveToFile(temp, f);
