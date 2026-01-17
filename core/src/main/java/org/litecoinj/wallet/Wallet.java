@@ -79,6 +79,9 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.*;
+import android.content.Context;
+import java.io.File;
+import java.io.IOException;
 
 import static com.google.common.base.Preconditions.*;
 
@@ -1332,7 +1335,15 @@ public class Wallet extends BaseTaggableObject
      */
     public void saveToFile(File f) throws IOException {
         //File directory = f.getAbsoluteFile().getParentFile();
-        File directory = context.getCacheDir();
+        // In your Activity or Fragment:
+        Context context = getApplicationContext(); // Or requireContext() in a Fragment
+
+        // Get a writable directory (internal storage)
+        File directory = context.getCacheDir(); // Or context.getFilesDir();
+
+
+
+        
         System.out.println(directory);
         File temp = File.createTempFile("wallet", null, directory);
         saveToFile(temp, f);
