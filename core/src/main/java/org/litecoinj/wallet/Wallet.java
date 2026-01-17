@@ -1290,12 +1290,19 @@ public class Wallet extends BaseTaggableObject
         }
     }
 
-    /** Saves the wallet first to the given temp file, then renames to the dest file. */
-    public void saveToFile(File temp, File destFile) throws IOException {
+    public void saveToFile(File tempFile, File destFile) throws IOException {
+        File tempParentFile = tempFile.getAbsoluteFile().getParentFile();
+        if (!tempParentFile.exists()) {
+            throw new FileNotFoundException(tempParentFile.getPath() + " (wallet directory not found)");
+        }
+        File destParentFile = destFile.getAbsoluteFile().getParentFile();
+        if (!destParentFile.exists()) {
+            throw new FileNotFoundException(destParentFile.getPath() + " (wallet directory not found)");
+        }
         FileOutputStream stream = null;
         lock.lock();
         try {
-            stream = new FileOutputStream(temp);
+            stream = new FileOutputStream(tempFile);
             saveToFileStream(stream);
             // Attempt to force the bits to hit the disk. In reality the OS or hard disk itself may still decide
             // to not write through to physical media for at least a few seconds, but this is the best we can do.
@@ -1303,16 +1310,16 @@ public class Wallet extends BaseTaggableObject
             stream.getFD().sync();
             stream.close();
             stream = null;
-            if (Utils.isWindows()) {
+            if (PlatformUtils.isWindows()) {
                 // Work around an issue on Windows whereby you can't rename over existing files.
                 File canonical = destFile.getCanonicalFile();
                 if (canonical.exists() && !canonical.delete())
                     throw new IOException("Failed to delete canonical wallet file for replacement with autosave");
-                if (temp.renameTo(canonical))
+                if (tempFile.renameTo(canonical))
                     return;  // else fall through.
-                throw new IOException("Failed to rename " + temp + " to " + canonical);
-            } else if (!temp.renameTo(destFile)) {
-                throw new IOException("Failed to rename " + temp + " to " + destFile);
+                throw new IOException("Failed to rename " + tempFile + " to " + canonical);
+            } else if (!tempFile.renameTo(destFile)) {
+                throw new IOException("Failed to rename " + tempFile + " to " + destFile);
             }
         } catch (RuntimeException e) {
             log.error("Failed whilst saving wallet", e);
@@ -1322,7 +1329,7 @@ public class Wallet extends BaseTaggableObject
             if (stream != null) {
                 stream.close();
             }
-            if (temp.exists()) {
+            if (tempFile.exists()) {
                 log.warn("Temp file still exists after failed save.");
             }
         }
@@ -1332,14 +1339,15 @@ public class Wallet extends BaseTaggableObject
      * Uses protobuf serialization to save the wallet to the given file. To learn more about this file format, see
      * {@link WalletProtobufSerializer}. Writes out first to a temporary file in the same directory and then renames
      * once written.
+     * @param f File to save wallet
+     * @throws FileNotFoundException if directory doesn't exist
+     * @throws IOException if an error occurs while saving
      */
     public void saveToFile(File f) throws IOException {
-        //File directory = f.getAbsoluteFile().getParentFile();
-        // In your Activity or Fragment:
-        Context context = getApplicationContext(); // Or requireContext() in a Fragment
-        // Get a writable directory (internal storage)
-        File directory = context.getFilesDir(); // Or context.getFilesDir();
-        System.out.println(directory);
+        File directory = f.getAbsoluteFile().getParentFile();
+        if (!directory.exists()) {
+            throw new FileNotFoundException(directory.getPath() + " (wallet directory not found)");
+        }
         File temp = File.createTempFile("wallet", null, directory);
         saveToFile(temp, f);
     }
