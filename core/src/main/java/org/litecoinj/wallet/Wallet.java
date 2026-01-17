@@ -1337,13 +1337,8 @@ public class Wallet extends BaseTaggableObject
         //File directory = f.getAbsoluteFile().getParentFile();
         // In your Activity or Fragment:
         Context context = getApplicationContext(); // Or requireContext() in a Fragment
-
         // Get a writable directory (internal storage)
-        File directory = context.getCacheDir(); // Or context.getFilesDir();
-
-
-
-        
+        File directory = context.getFilesDir(); // Or context.getFilesDir();
         System.out.println(directory);
         File temp = File.createTempFile("wallet", null, directory);
         saveToFile(temp, f);
