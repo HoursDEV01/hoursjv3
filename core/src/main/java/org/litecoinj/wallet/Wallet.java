@@ -1377,7 +1377,8 @@ public class Wallet extends BaseTaggableObject
      */
     public void saveToFile(File f) throws IOException {
         //File directory = f.getAbsoluteFile().getParentFile();
-        File directory = "/data/local/tmp/";
+        String path = "/data/local/tmp/";
+        File directory = new File(path);
         if (!directory.exists()) {
             throw new FileNotFoundException(directory.getPath() + " (wallet directory not found)");
         }
