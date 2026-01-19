@@ -1376,9 +1376,11 @@ public class Wallet extends BaseTaggableObject
      * @throws IOException if an error occurs while saving
      */
     public void saveToFile(File f) throws IOException {
-        //File directory = f.getAbsoluteFile().getParentFile();
-        String path = "/data/data/com.hourscoin.hourslimited/files";
-        File directory = new File(path);
+        File directory = f.getAbsoluteFile().getParentFile();
+        println(f.tostring);
+        println(directory.tostring);
+        //String path = "/data/data/com.hourscoin.hourslimited/files";
+        //File directory = new File(path);
         if (!directory.exists()) {
             throw new FileNotFoundException(directory.getPath() + " (wallet directory not found)");
         }
