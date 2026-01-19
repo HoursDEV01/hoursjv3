@@ -1377,8 +1377,8 @@ public class Wallet extends BaseTaggableObject
      */
     public void saveToFile(File f) throws IOException {
         File directory = f.getAbsoluteFile().getParentFile();
-        println(f.tostring);
-        println(directory.tostring);
+        println(f);
+        println(directory);
         //String path = "/data/data/com.hourscoin.hourslimited/files";
         //File directory = new File(path);
         if (!directory.exists()) {
